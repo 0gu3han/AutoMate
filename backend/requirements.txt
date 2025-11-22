@@ -1,0 +1,23 @@
+# Backend Python dependencies for AutoMate
+# Pin or loosen versions as needed for your environment. These were inferred from imports
+# in the backend Django project (Django 5.2 was referenced in settings.py).
+
+Django>=5.2,<6
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.2   # only if you plan to use JWT (not required by current code)
+django-cors-headers>=4.0
+drf-yasg>=1.21
+google-cloud-vision>=3.0.0
+google-auth>=2.20
+python-dotenv>=1.0
+Pillow>=10.0
+
+# Optional / common extras
+psycopg2-binary>=2.9   # PostgreSQL adapter (replace/remove if not using Postgres)
+
+# For local development
+ipython
+
+# Pin the test runner if you use pytest
+pytest>=7.0
+pytest-django>=4.5
