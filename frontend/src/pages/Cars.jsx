@@ -15,6 +15,10 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import {
@@ -23,6 +27,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { carsAPI } from '../services/api';
+import carMakesModels from '../utils/carMakesModels.json';
 
 function Cars() {
   const [cars, setCars] = useState([]);
@@ -35,12 +40,17 @@ function Cars() {
     year: '',
     owner: '',
   });
+  const [availableMakes, setAvailableMakes] = useState([]);
+  const [availableModels, setAvailableModels] = useState([]);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     fetchCars();
+    // load makes/models from JSON
+    const makes = Object.keys(carMakesModels || {});
+    setAvailableMakes(makes);
   }, []);
 
   const fetchCars = async () => {
@@ -81,6 +91,9 @@ function Cars() {
       year: car.year.toString(),
       owner: car.owner,
     });
+    // populate models for the selected make
+    const models = carMakesModels[car.make] || [];
+    setAvailableModels(models);
     setOpenDialog(true);
   };
 
@@ -215,22 +228,50 @@ function Cars() {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Make"
-                  value={formData.make}
-                  onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                  required
-                />
+                <FormControl fullWidth required>
+                  <InputLabel id="make-label">Make</InputLabel>
+                  <Select
+                    labelId="make-label"
+                    label="Make"
+                    value={formData.make}
+                    onChange={(e) => {
+                      const selectedMake = e.target.value;
+                      const models = carMakesModels[selectedMake] || [];
+                      setFormData({ ...formData, make: selectedMake, model: models.length ? models[0] : '' });
+                      setAvailableModels(models);
+                    }}
+                  >
+                    {availableMakes.map((make) => (
+                      <MenuItem key={make} value={make}>{make}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  required
-                />
+                {availableModels.length ? (
+                  <FormControl fullWidth required>
+                    <InputLabel id="model-label">Model</InputLabel>
+                    <Select
+                      labelId="model-label"
+                      label="Model"
+                      value={formData.model}
+                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                    >
+                      {availableModels.map((m) => (
+                        <MenuItem key={m} value={m}>{m}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                ) : (
+                  <TextField
+                    fullWidth
+                    label="Model (manual)"
+                    value={formData.model}
+                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                    helperText={formData.make ? 'No predefined models for selected make — enter manually' : 'Select a make to load models or enter manually'}
+                    required
+                  />
+                )}
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
