@@ -169,5 +169,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Google Vision AI Configuration (FREE)
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '') 
+# Google Vision AI Configuration (deprecated - use OpenAI instead)
+# GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '')
+
+# OpenAI Vision API Configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '') 

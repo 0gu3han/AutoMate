@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from .models import DiagnosisRequest
 from .serializers import DiagnosisRequestSerializer
-from .free_vision_service import FreeVisionService
+from .openai_vision_service import OpenAIVisionService
 from cars.models import Car
 import threading
 
@@ -22,7 +22,7 @@ class DiagnosisRequestListCreateView(generics.ListCreateAPIView):
         
         # Process AI analysis immediately for faster response
         try:
-            vision_service = FreeVisionService()
+            vision_service = OpenAIVisionService()
             ai_result = vision_service.get_image_analysis(diagnosis.image, diagnosis.damage_description)
             
             # Update the diagnosis with AI result
@@ -46,11 +46,10 @@ class DiagnosisRequestListCreateView(generics.ListCreateAPIView):
             }, status=status.HTTP_201_CREATED)
 
     def process_ai_diagnosis(self, diagnosis):
-        """Process AI analysis using free Google Vision AI"""
+        """Process AI analysis using OpenAI Vision API"""
         try:
-            # Try free Google Vision first
-            vision_service = FreeVisionService()
-            ai_result = vision_service.get_image_analysis(diagnosis.image)
+            vision_service = OpenAIVisionService()
+            ai_result = vision_service.get_image_analysis(diagnosis.image, diagnosis.damage_description)
             
             # Update the diagnosis with AI result
             diagnosis.ai_result = ai_result
