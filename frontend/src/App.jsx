@@ -6,6 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Cars from './pages/Cars';
 import Maintenance from './pages/Maintenance';
@@ -141,10 +142,14 @@ function App() {
         <AuthProvider>
           <Router>
             <Routes>
+              {/* Public routes */}
+              <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              
+              {/* Protected routes - require authentication */}
               <Route
-                path="/"
+                path="/dashboard"
                 element={
                   <ProtectedRoute>
                     <Layout>
@@ -183,6 +188,20 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              
+              {/* Redirect / to landing or dashboard based on auth */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute fallback={<Landing />}>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Catch all */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>

@@ -13,9 +13,9 @@ import { authAPI } from '../services/api';
 import { AuthContext } from './AuthContext';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); 
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const { setIsLoggedIn, setUser } = useContext(AuthContext);
 
