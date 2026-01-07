@@ -1,11 +1,11 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import logout
-from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from .serializers import UserSerializer, RegisterSerializer, LoginSerializer, UserUpdateSerializer
 
 # Create your views here.
 
@@ -49,3 +49,21 @@ def logout_view(request):
 @permission_classes([IsAuthenticated])
 def user_profile(request):
     return Response(UserSerializer(request.user).data)
+
+class UserProfileUpdateView(generics.UpdateAPIView):
+    """Update user profile information"""
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Return full user data with profile
+        return Response(UserSerializer(instance).data)

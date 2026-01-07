@@ -53,6 +53,10 @@ export const maintenanceAPI = {
   update: (id, data) => api.put(`/maintenance/${id}/`, data),
   delete: (id) => api.delete(`/maintenance/${id}/`),
   getByCar: (carId) => api.get(`/maintenance/car/${carId}/`),
+  getReminders: () => api.get('/maintenance/reminders/'),
+  createReminder: (data) => api.post('/maintenance/reminders/', data),
+  updateReminder: (id, data) => api.put(`/maintenance/reminders/${id}/`, data),
+  deleteReminder: (id) => api.delete(`/maintenance/reminders/${id}/`),
 };
 
 // AI Assistant API
@@ -77,6 +81,7 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register/', userData),
   logout: () => api.post('/auth/logout/'),
   getProfile: () => api.get('/auth/profile/'),
+  updateProfile: (data) => api.put('/auth/profile/update/', data),
 };
 
 export default api; 

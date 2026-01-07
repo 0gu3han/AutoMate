@@ -75,7 +75,7 @@ function Cars() {
       }
       setOpenDialog(false);
       setEditingCar(null);
-      setFormData({ vin: '', make: '', model: '', year: '', owner: '' });
+      setFormData({ make: '', model: '', year: '', owner: '' });
       fetchCars();
     } catch (error) {
       console.error('Error saving car:', error);
@@ -109,12 +109,6 @@ function Cars() {
   };
 
   const columns = [
-    { 
-      field: 'vin', 
-      headerName: 'VIN', 
-      width: isMobile ? 120 : 200,
-      flex: isMobile ? 1 : undefined,
-    },
     { 
       field: 'make', 
       headerName: 'Make', 
@@ -219,13 +213,6 @@ function Cars() {
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="VIN"
-                  value={formData.vin}
-                  onChange={(e) => setFormData({ ...formData, vin: e.target.value })}
-                  required
-                />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth required>

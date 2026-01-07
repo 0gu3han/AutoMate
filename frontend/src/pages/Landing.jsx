@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -22,11 +22,79 @@ import {
   CheckCircle as CheckIcon,
   Rocket as RocketIcon,
 } from '@mui/icons-material';
+import { maintenanceAPI } from '../services/api';
+import dayjs from 'dayjs';
 
 function Landing() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [nextReminder, setNextReminder] = useState(null);
+  const [reminderProgress, setReminderProgress] = useState(0);
+
+  useEffect(() => {
+    fetchNextReminder();
+    // Refresh every hour
+    const interval = setInterval(fetchNextReminder, 3600000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchNextReminder = async () => {
+    try {
+      const response = await maintenanceAPI.getReminders();
+      const reminders = response.data.results || response.data;
+      
+      // Find the next pending reminder
+      const pendingReminders = reminders.filter(r => r.status === 'pending');
+      if (pendingReminders.length > 0) {
+        const nextReminder = pendingReminders.sort(
+          (a, b) => new Date(a.reminder_date) - new Date(b.reminder_date)
+        )[0];
+        
+        setNextReminder(nextReminder);
+        // Calculate progress immediately and set it
+        const today = dayjs();
+        const reminderDay = dayjs(nextReminder.reminder_date);
+        const daysUntilReminder = reminderDay.diff(today, 'day');
+        
+        let progress = 0;
+        if (daysUntilReminder <= 0) {
+          progress = 100;
+        } else {
+          const creationDay = dayjs(nextReminder.created_at);
+          const totalDays = reminderDay.diff(creationDay, 'day');
+          const daysElapsed = totalDays - daysUntilReminder;
+          progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
+        }
+        setReminderProgress(progress);
+      } else {
+        setNextReminder(null);
+        setReminderProgress(0);
+      }
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+    }
+  };
+
+  const calculateProgress = (reminderDate, createdDate) => {
+    const today = dayjs();
+    const reminderDay = dayjs(reminderDate);
+    const daysUntilReminder = reminderDay.diff(today, 'day');
+    
+    // If reminder is today or in the past, show 100%
+    if (daysUntilReminder <= 0) {
+      return 100;
+    }
+    
+    // Calculate total days from creation to reminder
+    const creationDay = createdDate ? dayjs(createdDate) : today;
+    const totalDays = reminderDay.diff(creationDay, 'day');
+    const daysElapsed = totalDays - daysUntilReminder;
+    
+    // Progress = days elapsed / total days * 100
+    const progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
+    return progress;
+  };
 
   // Feature data with icons and descriptions
   const features = [
@@ -34,19 +102,19 @@ function Landing() {
       icon: <CarIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />,
       title: 'Smart Car Management',
       description: 'Track multiple vehicles in one place. Store VIN, make, model, year, and owner information.',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      gradient: 'linear-gradient(135deg, #0b2545 0%, #193a63 100%)',
     },
     {
       icon: <BuildIcon sx={{ fontSize: 40, color: theme.palette.secondary.main }} />,
       title: 'Maintenance Tracking',
       description: 'Log maintenance activities, schedule reminders, and keep detailed records of all service.',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      gradient: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)',
     },
     {
       icon: <ImageIcon sx={{ fontSize: 40, color: theme.palette.success.main }} />,
       title: 'AI Car Diagnostics',
       description: 'Upload car images and get instant AI-powered analysis of damage, wear, and repair needs.',
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      gradient: 'linear-gradient(135deg, #193a63 0%, #e05b4f 100%)',
     },
   ];
 
@@ -318,6 +386,61 @@ function Landing() {
           ))}
         </Grid>
       </Container>
+
+      {/* Reminder Progress Section */}
+      {nextReminder && (
+        <Box sx={{ background: '#f5f5f5', py: { xs: 4, md: 6 } }}>
+          <Container maxWidth="lg">
+            <Stack spacing={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 2,
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  🔔 Upcoming Maintenance Reminder
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                  {nextReminder.maintenance_event.car.year} {nextReminder.maintenance_event.car.make}{' '}
+                  {nextReminder.maintenance_event.car.model} - {nextReminder.maintenance_event.get_maintenance_type_display?.()}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3, fontWeight: 600 }}>
+                  Reminder Date: <span style={{ color: theme.palette.primary.main }}>
+                    {dayjs(nextReminder.reminder_date).format('MMMM DD, YYYY')}
+                  </span>
+                </Typography>
+              </Box>
+
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Days Until Reminder
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculateProgress(nextReminder.reminder_date, nextReminder.created_at)}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: '#e0e0e0',
+                    '& .MuiLinearProgress-bar': {
+                      borderRadius: 4,
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                    },
+                  }}
+                />
+              </Box>
+            </Stack>
+          </Container>
+        </Box>
+      )}
 
       {/* CTA Section */}
       <Box

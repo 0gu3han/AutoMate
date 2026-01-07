@@ -25,6 +25,7 @@ import {
   DirectionsCar as CarIcon,
   Build as MaintenanceIcon,
   SmartToy as AIIcon,
+  Person as ProfileIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 
@@ -35,6 +36,7 @@ const menuItems = [
   { text: 'Cars', icon: <CarIcon />, path: '/cars' },
   { text: 'Maintenance', icon: <MaintenanceIcon />, path: '/maintenance' },
   { text: 'AI Assistant', icon: <AIIcon />, path: '/ai-assistant' },
+  { text: 'Profile', icon: <ProfileIcon />, path: '/profile' },
 ];
 
 function Layout({ children }) {
@@ -52,7 +54,7 @@ function Layout({ children }) {
       <Box sx={{ 
         p: 3, 
         borderBottom: '1px solid #e2e8f0',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)'
       }}>
                   <Box sx={{ 
             display: 'flex', 

@@ -1,12 +1,8 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.conf import settings
 from .models import DiagnosisRequest
 from .serializers import DiagnosisRequestSerializer
 from .openai_vision_service import OpenAIVisionService
-from cars.models import Car
-import threading
 
 class DiagnosisRequestListCreateView(generics.ListCreateAPIView):
     serializer_class = DiagnosisRequestSerializer

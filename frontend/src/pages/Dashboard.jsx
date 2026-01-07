@@ -7,6 +7,8 @@ import {
   Box,
   Chip,
   LinearProgress,
+  Stack,
+  useTheme,
 } from '@mui/material';
 import {
   DirectionsCar as CarIcon,
@@ -16,24 +18,29 @@ import {
 } from '@mui/icons-material';
 import { carsAPI, maintenanceAPI, aiAssistantAPI } from '../services/api';
 import automateLogo from '../assets/automate-logo.png';
+import dayjs from 'dayjs';
 
 function Dashboard() {
+  const theme = useTheme();
   const [stats, setStats] = useState({
     totalCars: 0,
     totalMaintenance: 0,
     totalDiagnoses: 0,
     recentMaintenance: [],
   });
+  const [nextReminder, setNextReminder] = useState(null);
+  const [reminderProgress, setReminderProgress] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const [carsRes, maintenanceRes, diagnosesRes] = await Promise.all([
+        const [carsRes, maintenanceRes, diagnosesRes, remindersRes] = await Promise.all([
           carsAPI.getAll(),
           maintenanceAPI.getAll(),
           aiAssistantAPI.getAll(),
+          maintenanceAPI.getReminders(),
         ]);
 
         setStats({
@@ -42,6 +49,35 @@ function Dashboard() {
           totalDiagnoses: (diagnosesRes.data.results || diagnosesRes.data || []).length,
           recentMaintenance: (maintenanceRes.data.results || maintenanceRes.data || []).slice(0, 5),
         });
+
+        // Get next reminder
+        const reminders = remindersRes.data.results || remindersRes.data || [];
+        const pendingReminders = reminders.filter(r => r.status === 'pending');
+        if (pendingReminders.length > 0) {
+          const nextReminder = pendingReminders.sort(
+            (a, b) => new Date(a.reminder_date) - new Date(b.reminder_date)
+          )[0];
+          
+          setNextReminder(nextReminder);
+          // Calculate progress immediately and set it
+          const today = dayjs();
+          const reminderDay = dayjs(nextReminder.reminder_date);
+          const daysUntilReminder = reminderDay.diff(today, 'day');
+          
+          let progress = 0;
+          if (daysUntilReminder <= 0) {
+            progress = 100;
+          } else {
+            const creationDay = dayjs(nextReminder.created_at);
+            const totalDays = reminderDay.diff(creationDay, 'day');
+            const daysElapsed = totalDays - daysUntilReminder;
+            progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
+          }
+          setReminderProgress(progress);
+        } else {
+          setNextReminder(null);
+          setReminderProgress(0);
+        }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         setStats({
@@ -57,6 +93,26 @@ function Dashboard() {
 
     fetchStats();
   }, []);
+
+  const calculateProgress = (reminderDate, createdDate) => {
+    const today = dayjs();
+    const reminderDay = dayjs(reminderDate);
+    const daysUntilReminder = reminderDay.diff(today, 'day');
+    
+    // If reminder is today or in the past, show 100%
+    if (daysUntilReminder <= 0) {
+      return 100;
+    }
+    
+    // Calculate total days from creation to reminder
+    const creationDay = createdDate ? dayjs(createdDate) : today;
+    const totalDays = reminderDay.diff(creationDay, 'day');
+    const daysElapsed = totalDays - daysUntilReminder;
+    
+    // Progress = days elapsed / total days * 100
+    const progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
+    return progress;
+  };
 
   const StatCard = ({ title, value, icon, color, subtitle }) => (
     <Card sx={{ 
@@ -180,8 +236,61 @@ function Dashboard() {
             </Grid>
           </Grid>
 
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
-        <Grid item xs={12} lg={6}>
+          {nextReminder && (
+            <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <Card sx={{ 
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}05 100%)`,
+                  border: `1px solid ${theme.palette.primary.main}20`
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, color: theme.palette.primary.main }}>
+                          🔔 Next Maintenance Reminder
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {nextReminder.maintenance_event.car.year} {nextReminder.maintenance_event.car.make}{' '}
+                          {nextReminder.maintenance_event.car.model} • {nextReminder.maintenance_event.maintenance_type.replace('_', ' ')}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            Days Until Reminder
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                            {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days
+                          </Typography>
+                        </Box>
+                        <LinearProgress
+                          variant="determinate"
+                          value={calculateProgress(nextReminder.reminder_date, nextReminder.created_at)}
+                          sx={{
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: '#e0e0e0',
+                            '& .MuiLinearProgress-bar': {
+                              borderRadius: 4,
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                            },
+                          }}
+                        />
+                      </Box>
+
+                      <Typography variant="caption" color="text.secondary">
+                        Reminder Date: {dayjs(nextReminder.reminder_date).format('MMMM DD, YYYY')}
+                      </Typography>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          )}
+
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
+        <Grid item xs={12}>
           <Card sx={{ 
             background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
             border: '1px solid #e2e8f0'

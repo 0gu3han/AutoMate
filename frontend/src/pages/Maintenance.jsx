@@ -18,6 +18,9 @@ import {
   Select,
   useTheme,
   useMediaQuery,
+  FormControlLabel,
+  Checkbox,
+  Alert,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -25,6 +28,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  NotificationsActive as ReminderIcon,
 } from '@mui/icons-material';
 import { maintenanceAPI, carsAPI } from '../services/api';
 import dayjs from 'dayjs';
@@ -41,6 +45,8 @@ function Maintenance() {
     mileage: '',
     notes: '',
   });
+  const [showReminder, setShowReminder] = useState(false);
+  const [reminderDate, setReminderDate] = useState(dayjs());
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -77,13 +83,31 @@ function Maintenance() {
         date: formData.date.format('YYYY-MM-DD'),
       };
 
+      let eventId;
       if (editingEvent) {
         await maintenanceAPI.update(editingEvent.id, submitData);
+        eventId = editingEvent.id;
       } else {
-        await maintenanceAPI.create(submitData);
+        const response = await maintenanceAPI.create(submitData);
+        eventId = response.data.id;
       }
+
+      // Create reminder if user enabled it
+      if (showReminder && eventId) {
+        try {
+          await maintenanceAPI.createReminder({
+            maintenance_event_id: eventId,
+            reminder_date: reminderDate.format('YYYY-MM-DD'),
+          });
+        } catch (error) {
+          console.error('Error creating reminder:', error);
+          // Continue anyway - maintenance event was created
+        }
+      }
+
       setOpenDialog(false);
       setEditingEvent(null);
+      setShowReminder(false);
       setFormData({
         car_id: '',
         maintenance_type: '',
@@ -91,6 +115,7 @@ function Maintenance() {
         mileage: '',
         notes: '',
       });
+      setReminderDate(dayjs());
       fetchData();
     } catch (error) {
       console.error('Error saving maintenance event:', error);
@@ -248,7 +273,7 @@ function Maintenance() {
                   >
                     {cars.map((car) => (
                       <MenuItem key={car.id} value={car.id}>
-                        {car.year} {car.make} {car.model} ({car.vin})
+                        {car.year} {car.make} {car.model}
                       </MenuItem>
                     ))}
                   </Select>
@@ -303,6 +328,35 @@ function Maintenance() {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showReminder}
+                      onChange={(e) => setShowReminder(e.target.checked)}
+                    />
+                  }
+                  label="Set a reminder for this maintenance"
+                />
+              </Grid>
+              {showReminder && (
+                <Grid item xs={12}>
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Choose when you'd like to be reminded about this maintenance
+                  </Alert>
+                  <DatePicker
+                    label="Reminder Date"
+                    value={reminderDate}
+                    onChange={(newValue) => setReminderDate(newValue)}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        required: showReminder,
+                      },
+                    }}
+                  />
+                </Grid>
+              )}
             </Grid>
           </DialogContent>
           <DialogActions>

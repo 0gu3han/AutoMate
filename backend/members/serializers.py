@@ -1,11 +1,51 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from .models import UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['phone_number', 'avatar', 'bio', 'email_notifications', 
+                  'sms_notifications', 'reminder_advance_days', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
 
 class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+    
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile')
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(source='profile.phone_number', required=False, allow_blank=True)
+    bio = serializers.CharField(source='profile.bio', required=False, allow_blank=True)
+    email_notifications = serializers.BooleanField(source='profile.email_notifications', required=False)
+    sms_notifications = serializers.BooleanField(source='profile.sms_notifications', required=False)
+    reminder_advance_days = serializers.IntegerField(source='profile.reminder_advance_days', required=False)
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'bio', 
+                  'email_notifications', 'sms_notifications', 'reminder_advance_days']
+    
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        
+        # Update user fields
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        
+        # Update profile fields
+        if profile_data:
+            profile = instance.profile
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+        
+        return instance
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

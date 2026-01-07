@@ -66,7 +66,7 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)',
         p: 2,
       }}
     >
@@ -82,7 +82,7 @@ const Login = () => {
       >
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #0b2545 0%, #193a63 100%)',
             color: 'white',
             p: 4,
             textAlign: 'center',
@@ -158,11 +158,11 @@ const Login = () => {
               size="large"
               disabled={loading}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)',
                 py: 1.5,
                 mb: 3,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                  background: 'linear-gradient(135deg, #193a63 0%, #8f241c 100%)',
                 },
               }}
             >
@@ -178,7 +178,7 @@ const Login = () => {
               component={Link}
               to="/register"
               variant="text"
-              sx={{ color: '#667eea', fontWeight: 600 }}
+              sx={{ color: '#0b2545', fontWeight: 600 }}
             >
               Sign up
             </Button>

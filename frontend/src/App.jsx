@@ -13,19 +13,20 @@ import Maintenance from './pages/Maintenance';
 import AIAssistant from './pages/AIAssistant';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2563eb', // Modern blue
-      light: '#3b82f6',
-      dark: '#1d4ed8',
+      main: '#0b2545', // Navy core
+      light: '#193a63',
+      dark: '#08172f',
     },
     secondary: {
-      main: '#7c3aed', // Modern purple
-      light: '#8b5cf6',
-      dark: '#6d28d9',
+      main: '#c0392b', // Muted red accent
+      light: '#e05b4f',
+      dark: '#8f241c',
     },
     background: {
       default: '#f8fafc',
@@ -49,7 +50,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Saira Condensed", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
       fontSize: '2.5rem',
@@ -82,6 +83,7 @@ const theme = createTheme({
       fontSize: '0.875rem',
       lineHeight: 1.5,
     },
+    fontFamilyMonospace: '"Source Code Pro", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
   },
   shape: {
     borderRadius: 12,
@@ -184,6 +186,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <AIAssistant />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Profile />
                     </Layout>
                   </ProtectedRoute>
                 }
