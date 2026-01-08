@@ -9,21 +9,22 @@ class TestCarAPI(APITestCase):
         self.user = User.objects.create_user(username='tester', password='pass12345')
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
-        self.car1 = Car.objects.create(user=self.user, make='Toyota', model='Corolla', year=2020, color='Blue', license_plate='ABC123', mileage=10000)
-        self.car2 = Car.objects.create(user=self.user, make='Honda', model='Civic', year=2019, color='Red', license_plate='XYZ789', mileage=20000)
+        self.car1 = Car.objects.create(user=self.user, make='Toyota', model='Corolla', year=2020, vin='VIN123', owner='Tester One')
+        self.car2 = Car.objects.create(user=self.user, make='Honda', model='Civic', year=2019, vin='VIN456', owner='Tester One')
 
     def test_list_cars(self):
         url = reverse('car-list-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get('results', response.data)), 2)
 
     def test_search_cars_by_make(self):
         url = reverse('car-list-create')
         response = self.client.get(url, {'search': 'Toyota'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['make'], 'Toyota')
+        results = response.data.get('results', response.data)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['make'], 'Toyota')
 
     def test_export_csv(self):
         url = reverse('export-cars-csv')

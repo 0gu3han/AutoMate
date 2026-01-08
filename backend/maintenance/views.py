@@ -16,9 +16,9 @@ class MaintenanceEventListCreateView(generics.ListCreateAPIView):
     serializer_class = MaintenanceEventSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['service_type', 'car', 'completed']
-    search_fields = ['service_type', 'description', 'mechanic_notes']
-    ordering_fields = ['date', 'cost', 'created_at']
+    filterset_fields = ['maintenance_type', 'car', 'date', 'mileage']
+    search_fields = ['notes']
+    ordering_fields = ['date', 'mileage']
     ordering = ['-date']
 
     def get_queryset(self):
@@ -38,9 +38,9 @@ class CarMaintenanceListView(generics.ListAPIView):
     serializer_class = MaintenanceEventSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['service_type', 'completed']
-    search_fields = ['service_type', 'description']
-    ordering_fields = ['date', 'cost']
+    filterset_fields = ['maintenance_type']
+    search_fields = ['notes']
+    ordering_fields = ['date', 'mileage']
     ordering = ['-date']
     
     def get_queryset(self):
@@ -133,20 +133,16 @@ def export_maintenance_csv(request):
     response['Content-Disposition'] = 'attachment; filename="maintenance_history.csv"'
     
     writer = csv.writer(response)
-    writer.writerow(['Date', 'Car', 'Service Type', 'Description', 'Cost', 'Mileage', 'Mechanic Notes', 'Completed', 'Created At'])
+    writer.writerow(['Date', 'Car', 'Maintenance Type', 'Mileage', 'Notes'])
     
     events = MaintenanceEvent.objects.filter(user=request.user).select_related('car').order_by('-date')
     for event in events:
         writer.writerow([
             event.date.strftime('%Y-%m-%d'),
             f"{event.car.make} {event.car.model} ({event.car.year})",
-            event.service_type,
-            event.description or '',
-            event.cost or '',
-            event.mileage or '',
-            event.mechanic_notes or '',
-            'Yes' if event.completed else 'No',
-            event.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            event.get_maintenance_type_display(),
+            event.mileage,
+            event.notes or '',
         ])
     
     return response
