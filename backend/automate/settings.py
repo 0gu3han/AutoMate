@@ -250,6 +250,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # Logging Configuration
+# Use console logging only on Heroku (file logging not supported)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -266,15 +267,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
-            'maxBytes': 1024*1024*5,  # 5MB
-            'backupCount': 5,
-            'formatter': 'verbose',
+            'formatter': 'verbose' if not DEBUG else 'simple',
         },
     },
     'root': {
@@ -283,12 +276,12 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'] if not DEBUG else ['console'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['file'] if not DEBUG else ['console'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
