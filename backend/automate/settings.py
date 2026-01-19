@@ -109,6 +109,8 @@ WSGI_APPLICATION = 'automate.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+
 # Use PostgreSQL for production, SQLite for local development
 if DEBUG:
     # SQLite for local development
@@ -119,16 +121,13 @@ if DEBUG:
         }
     }
 else:
-    # PostgreSQL for production
+    # PostgreSQL for production - use DATABASE_URL from Heroku
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'automate_db'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 
 
