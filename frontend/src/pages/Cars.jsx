@@ -19,6 +19,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Stack,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import {
@@ -180,22 +181,75 @@ function Cars() {
 
       <Card>
         <CardContent sx={{ p: isMobile ? 1 : 2 }}>
-          <DataGrid
-            rows={cars}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[10]}
-            disableSelectionOnClick
-            autoHeight
-            sx={{
-              '& .MuiDataGrid-cell': {
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
-              },
-              '& .MuiDataGrid-columnHeader': {
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
-              },
-            }}
-          />
+          {isMobile ? (
+            // Mobile card view
+            <Stack spacing={2}>
+              {cars.map((car) => (
+                <Card key={car.id} variant="outlined" sx={{ p: 2, backgroundColor: '#f8fafc' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>MAKE</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{car.make}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>MODEL</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{car.model}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>YEAR</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{car.year}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>OWNER</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{car.owner}</Typography>
+                      </Box>
+                      {car.vin && (
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>VIN</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 500, wordBreak: 'break-all' }}>{car.vin}</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5, ml: 1, flexDirection: 'column' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(car)}
+                        sx={{ color: 'primary.main' }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(car.id)}
+                        sx={{ color: 'error.main' }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            // Desktop DataGrid view
+            <DataGrid
+              rows={cars}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[10]}
+              disableSelectionOnClick
+              autoHeight
+              sx={{
+                '& .MuiDataGrid-cell': {
+                  fontSize: '0.875rem',
+                },
+                '& .MuiDataGrid-columnHeader': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 

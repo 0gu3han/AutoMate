@@ -21,6 +21,7 @@ import {
   FormControlLabel,
   Checkbox,
   Alert,
+  Stack,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -231,22 +232,79 @@ function Maintenance() {
 
       <Card>
         <CardContent sx={{ p: isMobile ? 1 : 2 }}>
-          <DataGrid
-            rows={maintenanceEvents}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[10]}
-            disableSelectionOnClick
-            autoHeight
-            sx={{
-              '& .MuiDataGrid-cell': {
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
-              },
-              '& .MuiDataGrid-columnHeader': {
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
-              },
-            }}
-          />
+          {isMobile ? (
+            // Mobile card view
+            <Stack spacing={2}>
+              {maintenanceEvents.map((event) => (
+                <Card key={event.id} variant="outlined" sx={{ p: 2, backgroundColor: '#f8fafc' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>CAR</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {event.car ? `${event.car.year} ${event.car.make} ${event.car.model}` : 'Unknown Car'}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>TYPE</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {maintenanceTypes.find(t => t.value === event.maintenance_type)?.label || event.maintenance_type}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>DATE</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{dayjs(event.date).format('MM/DD/YYYY')}</Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>MILEAGE</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.mileage} mi</Typography>
+                      </Box>
+                      {event.notes && (
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>NOTES</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.notes}</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5, ml: 1, flexDirection: 'column' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(event)}
+                        sx={{ color: 'primary.main' }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(event.id)}
+                        sx={{ color: 'error.main' }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            // Desktop DataGrid view
+            <DataGrid
+              rows={maintenanceEvents}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[10]}
+              disableSelectionOnClick
+              autoHeight
+              sx={{
+                '& .MuiDataGrid-cell': {
+                  fontSize: '0.875rem',
+                },
+                '& .MuiDataGrid-columnHeader': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 

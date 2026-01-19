@@ -38,12 +38,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.email)
         instance.save()
         
-        # Update profile fields
-        if profile_data:
-            profile = instance.profile
-            for attr, value in profile_data.items():
+        # Ensure profile exists
+        profile, _ = UserProfile.objects.get_or_create(user=instance)
+        
+        # Merge flattened profile fields (since we map via source='profile.*')
+        profile_data = {**profile_data, **validated_data} if profile_data else validated_data
+        for attr, value in profile_data.items():
+            if hasattr(profile, attr):
                 setattr(profile, attr, value)
-            profile.save()
+        profile.save()
         
         return instance
 

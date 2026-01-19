@@ -19,15 +19,18 @@ function Profile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const fetchProfile = async () => {
+    try {
+      const { data } = await authAPI.getProfile();
+      setProfile(data);
+      setError('');
+    } catch (err) {
+      setError('Failed to load profile');
+      console.error('Error loading profile:', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await authAPI.getProfile();
-        setProfile(data);
-      } catch (err) {
-        setError('Failed to load profile');
-      }
-    };
     fetchProfile();
   }, []);
 
@@ -45,16 +48,32 @@ function Profile() {
     setError('');
     setSuccess('');
     try {
+      // Flatten payload to match backend serializer fields
       const payload = {
         first_name: profile.first_name,
         last_name: profile.last_name,
         email: profile.email,
-        profile: profile.profile,
+        phone_number: profile.profile?.phone_number,
+        bio: profile.profile?.bio,
+        email_notifications: profile.profile?.email_notifications,
+        sms_notifications: profile.profile?.sms_notifications,
+        reminder_advance_days: profile.profile?.reminder_advance_days,
       };
       await authAPI.updateProfile(payload);
       setSuccess('Profile updated successfully');
+      
+      // Refresh profile data from server
+      setTimeout(() => {
+        fetchProfile();
+      }, 500);
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setSuccess('');
+      }, 5000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to update profile');
+      console.error('Error updating profile:', err);
     } finally {
       setLoading(false);
     }

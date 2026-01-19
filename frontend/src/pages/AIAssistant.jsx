@@ -180,7 +180,7 @@ function AIAssistant() {
                       >
                         {cars.map((car) => (
                           <MenuItem key={car.id} value={car.id}>
-                            {car.year} {car.make} {car.model} ({car.vin})
+                            {car.year} {car.make} {car.model}
                           </MenuItem>
                         ))}
                       </Select>
