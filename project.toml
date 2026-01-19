@@ -1,9 +1,0 @@
-[[build.env]]
-name = "GOOGLE_RUNTIME_VERSION"
-value = "3.12.*"
-
-[build]
-builder = "heroku/builder:24"
-
-[[build.buildpacks]]
-uri = "heroku/python"
