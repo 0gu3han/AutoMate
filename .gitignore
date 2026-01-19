@@ -73,7 +73,7 @@ Thumbs.db
 
 # Google Vision credentials
 backend/google-vision-credentials/
-*.json
+backend/google-vision-credentials/*.json
 
 # Temporary files
 *.tmp
