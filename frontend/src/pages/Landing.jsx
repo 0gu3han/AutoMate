@@ -357,35 +357,7 @@ function Landing() {
         </Container>
       </Box>
 
-      {/* Stats Section */}
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
-        <Grid container spacing={3}>
-          {[
-            { value: '10,000+', label: 'Users Worldwide' },
-            { value: '50,000+', label: 'Vehicles Tracked' },
-            { value: '100,000+', label: 'Diagnostics Completed' },
-            { value: '4.8★', label: 'App Rating' },
-          ].map((stat, index) => (
-            <Grid item xs={6} sm={3} key={index}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography
-                  sx={{
-                    fontSize: { xs: '1.5rem', md: '2rem' },
-                    fontWeight: 800,
-                    color: theme.palette.primary.main,
-                    mb: 1,
-                  }}
-                >
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.label}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+
 
       {/* Reminder Progress Section */}
       {nextReminder && (
