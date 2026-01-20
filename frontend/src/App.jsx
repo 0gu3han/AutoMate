@@ -145,6 +145,7 @@ function App() {
           <Router>
             <Routes>
               {/* Public routes */}
+              <Route path="/" element={<Landing />} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -201,19 +202,7 @@ function App() {
                 }
               />
               
-              {/* Redirect / to landing or dashboard based on auth */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute fallback={<Landing />}>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Catch all */}
+              {/* Catch all - redirect to landing */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
