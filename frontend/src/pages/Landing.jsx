@@ -16,7 +16,7 @@ import {
   DirectionsCar as CarIcon,
   Build as BuildIcon,
   Image as ImageIcon,
-  RocketIcon,
+  RocketLaunch as RocketIcon,
 } from '@mui/icons-material';
 
 function Landing() {
