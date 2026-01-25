@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { maintenanceAPI, carsAPI } from '../services/api';
 import dayjs from 'dayjs';
+import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 
 function Maintenance() {
   const [maintenanceEvents, setMaintenanceEvents] = useState([]);
@@ -48,6 +49,8 @@ function Maintenance() {
   });
   const [showReminder, setShowReminder] = useState(false);
   const [reminderDate, setReminderDate] = useState(dayjs());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [maintenanceToDelete, setMaintenanceToDelete] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -136,13 +139,11 @@ function Maintenance() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this maintenance record?')) {
-      try {
-        await maintenanceAPI.delete(id);
-        fetchData();
-      } catch (error) {
-        console.error('Error deleting maintenance event:', error);
-      }
+    try {
+      await maintenanceAPI.delete(id);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting maintenance event:', error);
     }
   };
 
@@ -200,7 +201,10 @@ function Maintenance() {
           </IconButton>
           <IconButton 
             size="small"
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => {
+              setMaintenanceToDelete(params.row.id);
+              setDeleteDialogOpen(true);
+            }}
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -425,6 +429,15 @@ function Maintenance() {
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={() => handleDelete(maintenanceToDelete)}
+        title="Delete Maintenance Record"
+        message="Are you sure you want to delete this maintenance record? This action cannot be undone."
+      />
     </Box>
   );
 }

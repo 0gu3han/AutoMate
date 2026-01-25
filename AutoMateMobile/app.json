@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "AutoMate",
+    "slug": "automate-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "automatemobile",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.automate.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1976d2",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "package": "com.automate.mobile",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to upload car images for diagnosis.",
+          "cameraPermission": "The app accesses your camera to take photos of your car."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.1.100:8000/api"
+    }
+  }
+}

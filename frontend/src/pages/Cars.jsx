@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { carsAPI } from '../services/api';
 import carMakesModels from '../utils/carMakesModels.json';
+import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 
 function Cars() {
   const [cars, setCars] = useState([]);
@@ -43,6 +44,8 @@ function Cars() {
   });
   const [availableMakes, setAvailableMakes] = useState([]);
   const [availableModels, setAvailableModels] = useState([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [carToDelete, setCarToDelete] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -99,13 +102,11 @@ function Cars() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this car?')) {
-      try {
-        await carsAPI.delete(id);
-        fetchCars();
-      } catch (error) {
-        console.error('Error deleting car:', error);
-      }
+    try {
+      await carsAPI.delete(id);
+      fetchCars();
+    } catch (error) {
+      console.error('Error deleting car:', error);
     }
   };
 
@@ -149,7 +150,10 @@ function Cars() {
           </IconButton>
           <IconButton 
             size="small"
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => {
+              setCarToDelete(params.row.id);
+              setDeleteDialogOpen(true);
+            }}
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -343,6 +347,15 @@ function Cars() {
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={() => handleDelete(carToDelete)}
+        title="Delete Car"
+        message="Are you sure you want to delete this car? All associated maintenance records will also be deleted. This action cannot be undone."
+      />
     </Box>
   );
 }
