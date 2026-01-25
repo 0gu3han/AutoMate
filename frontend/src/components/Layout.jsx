@@ -32,7 +32,7 @@ import {
 const drawerWidth = 280;
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { text: 'Cars', icon: <CarIcon />, path: '/cars' },
   { text: 'Maintenance', icon: <MaintenanceIcon />, path: '/maintenance' },
   { text: 'AI Assistant', icon: <AIIcon />, path: '/ai-assistant' },
