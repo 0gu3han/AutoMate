@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import automateLogo from '../assets/automate-logo.png';
 
 import {
   AppBar,
@@ -56,27 +55,13 @@ function Layout({ children }) {
         borderBottom: '1px solid #e2e8f0',
         background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)'
       }}>
-                  <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2,
-            mb: 1
-          }}>
-            <img 
-              src={automateLogo} 
-              alt="AutoMate Logo" 
-              style={{ 
-                height: '60px', 
-                width: 'auto'
-              }} 
-            />
-            <Typography variant="h5" sx={{ 
-              color: 'white', 
-              fontWeight: 700
-            }}>
-              AutoMate
-            </Typography>
-          </Box>
+        <Typography variant="h5" sx={{ 
+          color: 'white', 
+          fontWeight: 700,
+          mb: 1
+        }}>
+          AutoMate
+        </Typography>
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
           Smart Car Management
         </Typography>
