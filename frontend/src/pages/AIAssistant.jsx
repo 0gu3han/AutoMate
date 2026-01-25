@@ -23,6 +23,9 @@ import {
   Fade,
   Zoom,
   alpha,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -33,8 +36,116 @@ import {
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
   Info as InfoIcon,
+  Circle as BulletIcon,
 } from '@mui/icons-material';
 import { aiAssistantAPI, carsAPI } from '../services/api';
+
+// Format AI result text into structured JSX
+const formatAIResult = (text, theme) => {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+  const elements = [];
+  let currentSection = null;
+  let listItems = [];
+
+  const flushListItems = () => {
+    if (listItems.length > 0) {
+      elements.push(
+        <List key={`list-${elements.length}`} sx={{ py: 0, pl: 2 }}>
+          {listItems.map((item, idx) => (
+            <ListItem key={idx} sx={{ py: 0.5, px: 0, alignItems: 'flex-start' }}>
+              <BulletIcon sx={{ fontSize: 8, mr: 1.5, mt: 1, color: theme.palette.primary.main }} />
+              <ListItemText 
+                primary={item} 
+                primaryTypographyProps={{ 
+                  variant: 'body2',
+                  sx: { lineHeight: 1.7 }
+                }} 
+              />
+            </ListItem>
+          ))}
+        </List>
+      );
+      listItems = [];
+    }
+  };
+
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+    
+    if (!trimmedLine) {
+      flushListItems();
+      return;
+    }
+
+    // Detect section headers (lines ending with ":", ALL CAPS, or numbered headers)
+    const isHeader = 
+      trimmedLine.endsWith(':') || 
+      (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 5 && !trimmedLine.match(/^[\d\.\-\*]/)) ||
+      trimmedLine.match(/^\d+\.\s+[A-Z]/);
+
+    if (isHeader) {
+      flushListItems();
+      const headerText = trimmedLine.replace(/:$/, '');
+      elements.push(
+        <Typography 
+          key={`header-${index}`}
+          variant="subtitle1" 
+          sx={{ 
+            fontWeight: 700,
+            color: theme.palette.primary.main,
+            mt: elements.length > 0 ? 2.5 : 0,
+            mb: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          <SparkleIcon sx={{ fontSize: 18 }} />
+          {headerText}
+        </Typography>
+      );
+      return;
+    }
+
+    // Detect bullet points or numbered lists
+    const isBulletPoint = trimmedLine.match(/^[\-\*\•]\s+/) || trimmedLine.match(/^\d+[\.\)]\s+/);
+    
+    if (isBulletPoint) {
+      const cleanText = trimmedLine.replace(/^[\-\*\•]\s+/, '').replace(/^\d+[\.\)]\s+/, '');
+      listItems.push(cleanText);
+      return;
+    }
+
+    // Regular paragraph
+    flushListItems();
+    
+    // Highlight important keywords
+    let formattedText = trimmedLine;
+    const keywords = ['URGENT', 'CRITICAL', 'WARNING', 'IMPORTANT', 'ATTENTION', 'DANGER', 'SEVERE'];
+    const hasKeyword = keywords.some(kw => formattedText.toUpperCase().includes(kw));
+
+    elements.push(
+      <Typography 
+        key={`text-${index}`}
+        variant="body2" 
+        sx={{ 
+          lineHeight: 1.8,
+          mb: 1,
+          color: hasKeyword ? theme.palette.error.main : 'text.primary',
+          fontWeight: hasKeyword ? 600 : 400,
+        }}
+      >
+        {formattedText}
+      </Typography>
+    );
+  });
+
+  flushListItems();
+
+  return <Box>{elements}</Box>;
+};
 
 function AIAssistant() {
   const [cars, setCars] = useState([]);
@@ -413,21 +524,7 @@ function AIAssistant() {
                           border: `1px solid ${theme.palette.divider}`,
                         }}
                       >
-                        <Typography 
-                          variant="body1" 
-                          component="div" 
-                          sx={{ 
-                            whiteSpace: 'pre-wrap', 
-                            lineHeight: 1.8,
-                            color: 'text.primary',
-                            '& strong': {
-                              color: theme.palette.primary.main,
-                              fontWeight: 700,
-                            }
-                          }}
-                        >
-                          {aiResult}
-                        </Typography>
+                        {formatAIResult(aiResult, theme)}
                       </Paper>
                     </Stack>
                   </CardContent>
@@ -499,21 +596,11 @@ function AIAssistant() {
                                 p: 2,
                                 backgroundColor: alpha(theme.palette.primary.main, 0.03),
                                 borderRadius: 1,
+                                maxHeight: '200px',
+                                overflow: 'auto',
                               }}
                             >
-                              <Typography 
-                                variant="body2" 
-                                component="div"
-                                sx={{
-                                  whiteSpace: 'pre-wrap',
-                                  lineHeight: 1.6,
-                                  maxHeight: '150px',
-                                  overflow: 'auto',
-                                  color: 'text.secondary',
-                                }}
-                              >
-                                {diagnosis.ai_result}
-                              </Typography>
+                              {formatAIResult(diagnosis.ai_result, theme)}
                             </Paper>
                           ) : (
                             <Alert severity="info" icon={<InfoIcon />}>
