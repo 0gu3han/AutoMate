@@ -17,7 +17,6 @@ import {
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { carsAPI, maintenanceAPI, aiAssistantAPI } from '../services/api';
-import automateLogo from '../assets/automate-logo.png';
 import dayjs from 'dayjs';
 
 function Dashboard() {
@@ -171,19 +170,9 @@ function Dashboard() {
       </Box>
       
       <Box sx={{ mb: 4, p: 3, bgcolor: 'primary.main', color: 'white', borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                      <img 
-              src={automateLogo} 
-              alt="AutoMate Logo" 
-              style={{ 
-                height: '50px', 
-                width: 'auto'
-              }} 
-            />
-          <Typography variant="h5" sx={{ fontWeight: 600 }}>
-            Welcome to AutoMate!
-          </Typography>
-        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+          Welcome to AutoMate!
+        </Typography>
         <Typography variant="body1">
           Your car management dashboard is ready. Start by adding your first car or explore the features below.
         </Typography>

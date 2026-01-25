@@ -79,16 +79,13 @@ const formatAIResult = (text, theme) => {
       return;
     }
 
-    // Detect section headers (lines ending with ":", ALL CAPS, or numbered headers)
-    const isHeader = 
-      trimmedLine.endsWith(':') || 
-      (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 5 && !trimmedLine.match(/^[\d\.\-\*]/)) ||
-      trimmedLine.match(/^\d+\.\s+[A-Z]/) ||
-      trimmedLine.match(/^[A-Z][a-z\s]+:$/);
-
-    if (isHeader) {
+    // Detect markdown bold headers (e.g., **Header**: or **Header**)
+    const markdownBoldMatch = trimmedLine.match(/^\*\*(.+?)\*\*:?(.*)$/);
+    if (markdownBoldMatch) {
       flushListItems();
-      const headerText = trimmedLine.replace(/:$/, '');
+      const headerText = markdownBoldMatch[1];
+      const afterText = markdownBoldMatch[2].trim();
+      
       elements.push(
         <Typography 
           key={`header-${index}`}
@@ -96,7 +93,7 @@ const formatAIResult = (text, theme) => {
           sx={{ 
             fontWeight: 700,
             color: theme.palette.primary.main,
-            mt: elements.length > 0 ? 2 : 0,
+            mt: elements.length > 0 ? 2.5 : 0,
             mb: 0.5,
             display: 'flex',
             alignItems: 'center',
@@ -104,6 +101,53 @@ const formatAIResult = (text, theme) => {
           }}
         >
           <SparkleIcon sx={{ fontSize: 16 }} />
+          {headerText}
+        </Typography>
+      );
+      
+      if (afterText) {
+        elements.push(
+          <Typography 
+            key={`text-${index}`}
+            variant="body2" 
+            sx={{ lineHeight: 1.8, mb: 1, color: 'text.primary' }}
+          >
+            {afterText}
+          </Typography>
+        );
+      }
+      return;
+    }
+
+    // Detect section headers (lines ending with ":", ALL CAPS, or numbered headers)
+    const isHeader = 
+      trimmedLine.endsWith(':') || 
+      (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 5 && !trimmedLine.match(/^[\d\.\-\*]/)) ||
+      trimmedLine.match(/^\d+\.\s+\*\*[A-Z]/) ||
+      trimmedLine.match(/^🔍|^✅|^❌|^📋|^💰|^🔧|^⚠️|^📊/);
+
+    if (isHeader) {
+      flushListItems();
+      const headerText = trimmedLine.replace(/:$/, '').replace(/^\d+\.\s+/, '');
+      
+      // Check if it has emojis - if so, use larger text and no icon
+      const hasEmoji = trimmedLine.match(/^[🔍✅❌📋💰🔧⚠️📊]/);
+      
+      elements.push(
+        <Typography 
+          key={`header-${index}`}
+          variant={hasEmoji ? "h6" : "subtitle1"}
+          sx={{ 
+            fontWeight: 700,
+            color: hasEmoji ? theme.palette.primary.dark : theme.palette.primary.main,
+            mt: elements.length > 0 ? (hasEmoji ? 3 : 2) : 0,
+            mb: hasEmoji ? 1.5 : 0.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          {!hasEmoji && <SparkleIcon sx={{ fontSize: 16 }} />}
           {headerText}
         </Typography>
       );
@@ -122,9 +166,10 @@ const formatAIResult = (text, theme) => {
     // Regular paragraph
     flushListItems();
     
-    // Highlight important keywords
+    // Highlight important keywords and emojis
     const keywords = ['URGENT', 'CRITICAL', 'WARNING', 'IMPORTANT', 'ATTENTION', 'DANGER', 'SEVERE'];
     const hasKeyword = keywords.some(kw => trimmedLine.toUpperCase().includes(kw));
+    const hasEmoji = trimmedLine.match(/[🔍✅❌📋💰🔧⚠️📊]/);
 
     elements.push(
       <Typography 
@@ -135,6 +180,7 @@ const formatAIResult = (text, theme) => {
           mb: 0.5,
           color: hasKeyword ? theme.palette.error.main : 'text.primary',
           fontWeight: hasKeyword ? 600 : 400,
+          fontStyle: trimmedLine.startsWith('*') && trimmedLine.endsWith('*') ? 'italic' : 'normal',
         }}
       >
         {trimmedLine}
