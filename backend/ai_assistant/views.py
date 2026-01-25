@@ -19,7 +19,22 @@ class DiagnosisRequestListCreateView(generics.ListCreateAPIView):
         # Process AI analysis immediately for faster response
         try:
             vision_service = OpenAIVisionService()
-            ai_result = vision_service.get_image_analysis(diagnosis.image, diagnosis.damage_description)
+            
+            # Get car information for context
+            car_info = None
+            if diagnosis.car:
+                car_info = {
+                    'year': diagnosis.car.year,
+                    'make': diagnosis.car.make,
+                    'model': diagnosis.car.model,
+                    'vin': diagnosis.car.vin
+                }
+            
+            ai_result = vision_service.get_image_analysis(
+                diagnosis.image, 
+                diagnosis.damage_description,
+                car_info=car_info
+            )
             
             # Update the diagnosis with AI result
             diagnosis.ai_result = ai_result

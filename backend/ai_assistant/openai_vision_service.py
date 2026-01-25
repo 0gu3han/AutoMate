@@ -39,13 +39,14 @@ class OpenAIVisionService:
             print(f"Error encoding image: {e}")
             raise
 
-    def get_image_analysis(self, image_file, damage_description=""):
+    def get_image_analysis(self, image_file, damage_description="", car_info=None):
         """
         Analyze a car image using OpenAI Vision API (GPT-4 Vision)
         
         Args:
             image_file: Django ImageField file object
             damage_description: Optional user description of damage
+            car_info: Optional dict with car details (year, make, model, vin)
             
         Returns:
             str: AI analysis in markdown format
@@ -53,7 +54,7 @@ class OpenAIVisionService:
         try:
             if not self.api_key:
                 print("⚠️ OpenAI API key not available, using mock response")
-                return self.get_enhanced_mock_response(damage_description)
+                return self.get_enhanced_mock_response(damage_description, car_info)
             
             # Import here to avoid dependency issues if not installed
             import requests
@@ -75,7 +76,7 @@ class OpenAIVisionService:
                 media_type = "image/jpeg"  # Default
             
             # Prepare the prompt
-            prompt = self.build_analysis_prompt(damage_description)
+            prompt = self.build_analysis_prompt(damage_description, car_info)
             
             # Call OpenAI Vision API using REST
             print(f"Calling OpenAI Vision API with model gpt-4o...")
@@ -129,7 +130,7 @@ class OpenAIVisionService:
             result = response.json()
             analysis = result['choices'][0]['message']['content']
             print("✅ OpenAI Vision analysis completed successfully")
-            return self.format_analysis(analysis, damage_description)
+            return self.format_analysis(analysis, damage_description, car_info)
             
         except Exception as e:
             error_str = str(e)
@@ -142,9 +143,22 @@ class OpenAIVisionService:
             else:
                 return self.get_error_response(error_str)
 
-    def build_analysis_prompt(self, damage_description=""):
+    def build_analysis_prompt(self, damage_description="", car_info=None):
         """Build the prompt for OpenAI Vision analysis"""
-        prompt = """Analyze this car image and provide a comprehensive damage assessment report. 
+        
+        # Add car-specific context if available
+        car_context = ""
+        if car_info:
+            car_context = f"""
+
+**Vehicle Information:**
+- Year: {car_info.get('year', 'Unknown')}
+- Make: {car_info.get('make', 'Unknown')}
+- Model: {car_info.get('model', 'Unknown')}
+
+Please provide model-specific recommendations and consider common issues for this particular vehicle when analyzing."""
+        
+        prompt = f"""Analyze this car image and provide a comprehensive damage assessment report.{car_context}
 
 Please include in your analysis:
 
@@ -170,23 +184,37 @@ Please incorporate this information into your analysis and confirm or provide ad
         
         return prompt
 
-    def format_analysis(self, analysis, damage_description=""):
+    def format_analysis(self, analysis, damage_description="", car_info=None):
         """Format the OpenAI response into a consistent markdown format"""
         formatted = "🔍 **OpenAI Vision AI Analysis**\n\n"
+        
+        # Add car info header if available
+        if car_info:
+            formatted += f"**Vehicle:** {car_info.get('year', '')} {car_info.get('make', '')} {car_info.get('model', '')}\n\n"
+        
         formatted += analysis
         
         formatted += f"\n\n*Analysis powered by OpenAI GPT-4 Vision*"
         
         return formatted
 
-    def get_enhanced_mock_response(self, damage_description=""):
+    def get_enhanced_mock_response(self, damage_description="", car_info=None):
         """Fallback response when OpenAI API is not available"""
-        analysis = """🔍 **AI Car Analysis (Basic Mode)**
+        
+        car_header = ""
+        car_specific = ""
+        if car_info:
+            car_header = f"\n**Vehicle:** {car_info.get('year', '')} {car_info.get('make', '')} {car_info.get('model', '')}\n"
+            car_specific = f"""
+- Vehicle make/model identified: {car_info.get('year', '')} {car_info.get('make', '')} {car_info.get('model', '')}
+- Model-specific recommendations available upon full AI activation"""
+        
+        analysis = f"""🔍 **AI Car Analysis (Basic Mode)**{car_header}
 
 ✅ **Image Successfully Processed**: Your car image has been uploaded and analyzed.
 
 📋 **Analysis Results**:
-- Vehicle image detected
+- Vehicle image detected{car_specific}
 - Basic visual assessment completed"""
 
         if damage_description and damage_description.strip():
@@ -292,9 +320,9 @@ An error occurred while processing your image.
 
 If the problem persists, please contact support."""
 
-    def get_image_analysis_async(self, image_file, damage_description=""):
+    def get_image_analysis_async(self, image_file, damage_description="", car_info=None):
         """
         Async wrapper for image analysis (can be extended for async processing)
         Currently just wraps the sync method
         """
-        return self.get_image_analysis(image_file, damage_description)
+        return self.get_image_analysis(image_file, damage_description, car_info)

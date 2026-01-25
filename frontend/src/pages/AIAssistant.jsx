@@ -71,6 +71,32 @@ const formatAIResult = (text, theme) => {
     }
   };
 
+  const processInlineMarkdown = (text) => {
+    // Process **bold** text
+    const parts = [];
+    let lastIndex = 0;
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let match;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      parts.push(
+        <Box key={match.index} component="span" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+          {match[1]}
+        </Box>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
   lines.forEach((line, index) => {
     const trimmedLine = line.trim();
     
@@ -79,76 +105,50 @@ const formatAIResult = (text, theme) => {
       return;
     }
 
-    // Detect markdown bold headers (e.g., **Header**: or **Header**)
-    const markdownBoldMatch = trimmedLine.match(/^\*\*(.+?)\*\*:?(.*)$/);
-    if (markdownBoldMatch) {
+    // Detect markdown headers (###, ####, etc.)
+    const markdownHeaderMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+    if (markdownHeaderMatch) {
       flushListItems();
-      const headerText = markdownBoldMatch[1];
-      const afterText = markdownBoldMatch[2].trim();
+      const level = markdownHeaderMatch[1].length;
+      const headerText = markdownHeaderMatch[2];
       
       elements.push(
         <Typography 
           key={`header-${index}`}
-          variant="subtitle1" 
+          variant={level <= 2 ? "h6" : "subtitle1"}
           sx={{ 
             fontWeight: 700,
-            color: theme.palette.primary.main,
-            mt: elements.length > 0 ? 2.5 : 0,
-            mb: 0.5,
+            color: level <= 2 ? theme.palette.primary.dark : theme.palette.primary.main,
+            mt: elements.length > 0 ? (level <= 2 ? 3 : 2) : 0,
+            mb: 1,
             display: 'flex',
             alignItems: 'center',
             gap: 1,
           }}
         >
-          <SparkleIcon sx={{ fontSize: 16 }} />
+          <SparkleIcon sx={{ fontSize: level <= 2 ? 18 : 16 }} />
           {headerText}
         </Typography>
       );
-      
-      if (afterText) {
-        elements.push(
-          <Typography 
-            key={`text-${index}`}
-            variant="body2" 
-            sx={{ lineHeight: 1.8, mb: 1, color: 'text.primary' }}
-          >
-            {afterText}
-          </Typography>
-        );
-      }
       return;
     }
 
-    // Detect section headers (lines ending with ":", ALL CAPS, or numbered headers)
-    const isHeader = 
-      trimmedLine.endsWith(':') || 
-      (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 5 && !trimmedLine.match(/^[\d\.\-\*]/)) ||
-      trimmedLine.match(/^\d+\.\s+\*\*[A-Z]/) ||
-      trimmedLine.match(/^🔍|^✅|^❌|^📋|^💰|^🔧|^⚠️|^📊/);
-
-    if (isHeader) {
+    // Detect emoji headers
+    const emojiMatch = trimmedLine.match(/^(🔍|✅|❌|📋|💰|🔧|⚠️|📊|🎯|💡|🚗|⭐)\s*(.+)$/);
+    if (emojiMatch) {
       flushListItems();
-      const headerText = trimmedLine.replace(/:$/, '').replace(/^\d+\.\s+/, '');
-      
-      // Check if it has emojis - if so, use larger text and no icon
-      const hasEmoji = trimmedLine.match(/^[🔍✅❌📋💰🔧⚠️📊]/);
-      
       elements.push(
         <Typography 
-          key={`header-${index}`}
-          variant={hasEmoji ? "h6" : "subtitle1"}
+          key={`emoji-header-${index}`}
+          variant="h6"
           sx={{ 
             fontWeight: 700,
-            color: hasEmoji ? theme.palette.primary.dark : theme.palette.primary.main,
-            mt: elements.length > 0 ? (hasEmoji ? 3 : 2) : 0,
-            mb: hasEmoji ? 1.5 : 0.5,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
+            color: theme.palette.primary.dark,
+            mt: elements.length > 0 ? 3 : 0,
+            mb: 1.5,
           }}
         >
-          {!hasEmoji && <SparkleIcon sx={{ fontSize: 16 }} />}
-          {headerText}
+          {emojiMatch[1]} {emojiMatch[2]}
         </Typography>
       );
       return;
@@ -159,17 +159,16 @@ const formatAIResult = (text, theme) => {
     
     if (isBulletPoint) {
       const cleanText = trimmedLine.replace(/^[\-\*\•]\s+/, '').replace(/^\d+[\.\)]\s+/, '');
-      listItems.push(cleanText);
+      listItems.push(processInlineMarkdown(cleanText));
       return;
     }
 
-    // Regular paragraph
+    // Regular paragraph with inline markdown processing
     flushListItems();
     
-    // Highlight important keywords and emojis
+    // Highlight important keywords
     const keywords = ['URGENT', 'CRITICAL', 'WARNING', 'IMPORTANT', 'ATTENTION', 'DANGER', 'SEVERE'];
     const hasKeyword = keywords.some(kw => trimmedLine.toUpperCase().includes(kw));
-    const hasEmoji = trimmedLine.match(/[🔍✅❌📋💰🔧⚠️📊]/);
 
     elements.push(
       <Typography 
@@ -177,13 +176,12 @@ const formatAIResult = (text, theme) => {
         variant="body2" 
         sx={{ 
           lineHeight: 1.8,
-          mb: 0.5,
+          mb: 0.8,
           color: hasKeyword ? theme.palette.error.main : 'text.primary',
           fontWeight: hasKeyword ? 600 : 400,
-          fontStyle: trimmedLine.startsWith('*') && trimmedLine.endsWith('*') ? 'italic' : 'normal',
         }}
       >
-        {trimmedLine}
+        {processInlineMarkdown(trimmedLine)}
       </Typography>
     );
   });
