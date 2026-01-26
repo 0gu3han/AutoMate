@@ -159,13 +159,20 @@ function Layout({ children }) {
             >
               <LogoutIcon />
             </IconButton>
-            <Avatar sx={{ 
-              bgcolor: 'primary.main',
-              width: 36,
-              height: 36,
-              fontSize: '0.875rem',
-              fontWeight: 600
-            }}>
+            <Avatar 
+              onClick={() => navigate('/profile')}
+              sx={{ 
+                bgcolor: 'primary.main',
+                width: 36,
+                height: 36,
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                }
+              }}>
               {(user?.first_name?.charAt(0) || user?.username?.charAt(0) || 'U').toUpperCase()}
             </Avatar>
           </Box>

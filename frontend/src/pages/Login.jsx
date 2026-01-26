@@ -88,16 +88,23 @@ const Login = () => {
             textAlign: 'center',
           }}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            mb: 2,
-            backgroundColor: 'white',
-            borderRadius: 2,
-            p: 2,
-            width: 'fit-content',
-            margin: '0 auto 16px'
-          }}>
+          <Box 
+            onClick={() => navigate('/')}
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mb: 2,
+              backgroundColor: 'white',
+              borderRadius: 2,
+              p: 2,
+              width: 'fit-content',
+              margin: '0 auto 16px',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+              }
+            }}>
             <img 
               src={automateLogo} 
               alt="AutoMate Logo" 

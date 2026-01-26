@@ -87,10 +87,6 @@ function Maintenance() {
     e.preventDefault();
     setSubmitting(true);
     
-    // Close dialog immediately for better UX
-    const isEditing = !!editingEvent;
-    setOpenDialog(false);
-    
     try {
       const submitData = {
         ...formData,
@@ -98,7 +94,7 @@ function Maintenance() {
       };
 
       let eventId;
-      if (isEditing) {
+      if (editingEvent) {
         await maintenanceAPI.update(editingEvent.id, submitData);
         eventId = editingEvent.id;
       } else {
@@ -122,11 +118,12 @@ function Maintenance() {
       // Show success message
       setSnackbar({
         open: true,
-        message: isEditing ? 'Maintenance updated successfully' : 'Maintenance added successfully',
+        message: editingEvent ? 'Maintenance updated successfully' : 'Maintenance added successfully',
         severity: 'success'
       });
       
-      // Reset form
+      // Close dialog and reset form
+      setOpenDialog(false);
       setEditingEvent(null);
       setShowReminder(false);
       setFormData({
@@ -138,7 +135,7 @@ function Maintenance() {
       });
       setReminderDate(dayjs());
       
-      // Refresh data in background
+      // Refresh data
       fetchData();
     } catch (error) {
       console.error('Error saving maintenance event:', error);

@@ -75,12 +75,14 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
+      console.error('Error response:', error.response);
       
       // Extract error message from various possible formats
       let errorMessage = 'Registration failed. Please try again.';
       
       if (error.response?.data) {
         const data = error.response.data;
+        console.log('Error data:', data);
         
         // Handle different error response formats
         if (typeof data === 'string') {
@@ -89,24 +91,37 @@ export const AuthProvider = ({ children }) => {
           errorMessage = data.detail;
         } else if (data.non_field_errors) {
           errorMessage = Array.isArray(data.non_field_errors) 
-            ? data.non_field_errors[0] 
+            ? data.non_field_errors.join(', ') 
             : data.non_field_errors;
         } else if (data.username) {
           errorMessage = Array.isArray(data.username) 
-            ? `Username: ${data.username[0]}` 
+            ? `Username: ${data.username.join(', ')}` 
             : `Username: ${data.username}`;
         } else if (data.email) {
           errorMessage = Array.isArray(data.email) 
-            ? `Email: ${data.email[0]}` 
+            ? `Email: ${data.email.join(', ')}` 
             : `Email: ${data.email}`;
         } else if (data.password) {
           errorMessage = Array.isArray(data.password) 
-            ? `Password: ${data.password[0]}` 
+            ? `Password: ${data.password.join(', ')}` 
             : `Password: ${data.password}`;
         } else if (data.password2) {
           errorMessage = Array.isArray(data.password2) 
-            ? `Password confirmation: ${data.password2[0]}` 
-            : `Password confirmation: ${data.password2}`;
+            ? `${data.password2.join(', ')}` 
+            : data.password2;
+        } else {
+          // If we have multiple field errors, combine them
+          const fieldErrors = [];
+          for (const [field, errors] of Object.entries(data)) {
+            if (Array.isArray(errors)) {
+              fieldErrors.push(`${field}: ${errors.join(', ')}`);
+            } else if (typeof errors === 'string') {
+              fieldErrors.push(`${field}: ${errors}`);
+            }
+          }
+          if (fieldErrors.length > 0) {
+            errorMessage = fieldErrors.join('; ');
+          }
         }
       } else if (error.message) {
         errorMessage = error.message;
