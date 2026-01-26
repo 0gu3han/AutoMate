@@ -27,7 +27,6 @@ function Dashboard() {
     recentMaintenance: [],
   });
   const [nextReminder, setNextReminder] = useState(null);
-  const [reminderProgress, setReminderProgress] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,12 +56,8 @@ function Dashboard() {
           )[0];
           
           setNextReminder(nextReminder);
-          // Calculate progress immediately and set it
-          const progress = calculateProgress(nextReminder.reminder_date);
-          setReminderProgress(progress);
         } else {
           setNextReminder(null);
-          setReminderProgress(0);
         }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -79,26 +74,6 @@ function Dashboard() {
 
     fetchStats();
   }, []);
-
-  const calculateProgress = (reminderDate) => {
-    const today = dayjs();
-    const reminderDay = dayjs(reminderDate);
-    const daysUntilReminder = reminderDay.diff(today, 'day');
-    
-    // If reminder is today or in the past, show 100% (overdue/due today)
-    if (daysUntilReminder <= 0) {
-      return 100;
-    }
-    
-    // Define a standard time window (e.g., 30 days)
-    // Progress increases as we get closer to the reminder date
-    const maxDays = 30;
-    const daysFromStart = Math.max(0, maxDays - daysUntilReminder);
-    
-    // Progress = how far through the 30-day window we are
-    const progress = Math.min(100, (daysFromStart / maxDays) * 100);
-    return Math.round(progress);
-  };
 
   const StatCard = ({ title, value, icon, color, subtitle }) => (
     <Card sx={{ 
@@ -230,35 +205,10 @@ function Dashboard() {
                           {nextReminder.maintenance_event.car.model} • {nextReminder.maintenance_event.maintenance_type.replace('_', ' ')}
                         </Typography>
                       </Box>
-                      
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            Reminder Progress
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                            {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days remaining
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={reminderProgress}
-                          sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: '#e0e0e0',
-                            '& .MuiLinearProgress-bar': {
-                              borderRadius: 4,
-                              background: reminderProgress >= 80 
-                                ? `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.warning.main} 100%)`
-                                : `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                            },
-                          }}
-                        />
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                          {reminderProgress >= 80 ? '⚠️ Reminder approaching soon' : 'On track'}
-                        </Typography>
-                      </Box>
+
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                        {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days remaining
+                      </Typography>
 
                       <Typography variant="caption" color="text.secondary">
                         Reminder Date: {dayjs(nextReminder.reminder_date).format('MMMM DD, YYYY')}
