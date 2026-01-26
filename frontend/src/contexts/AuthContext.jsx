@@ -75,13 +75,46 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // Extract error message from various possible formats
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.response?.data) {
+        const data = error.response.data;
+        
+        // Handle different error response formats
+        if (typeof data === 'string') {
+          errorMessage = data;
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.non_field_errors) {
+          errorMessage = Array.isArray(data.non_field_errors) 
+            ? data.non_field_errors[0] 
+            : data.non_field_errors;
+        } else if (data.username) {
+          errorMessage = Array.isArray(data.username) 
+            ? `Username: ${data.username[0]}` 
+            : `Username: ${data.username}`;
+        } else if (data.email) {
+          errorMessage = Array.isArray(data.email) 
+            ? `Email: ${data.email[0]}` 
+            : `Email: ${data.email}`;
+        } else if (data.password) {
+          errorMessage = Array.isArray(data.password) 
+            ? `Password: ${data.password[0]}` 
+            : `Password: ${data.password}`;
+        } else if (data.password2) {
+          errorMessage = Array.isArray(data.password2) 
+            ? `Password confirmation: ${data.password2[0]}` 
+            : `Password confirmation: ${data.password2}`;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       return { 
         success: false, 
-        error: error.response?.data?.username?.[0] || 
-               error.response?.data?.email?.[0] || 
-               error.response?.data?.password?.[0] || 
-               error.response?.data?.password2?.[0] || 
-               'Registration failed' 
+        error: errorMessage
       };
     }
   };
