@@ -59,19 +59,7 @@ function Dashboard() {
           
           setNextReminder(nextReminder);
           // Calculate progress immediately and set it
-          const today = dayjs();
-          const reminderDay = dayjs(nextReminder.reminder_date);
-          const daysUntilReminder = reminderDay.diff(today, 'day');
-          
-          let progress = 0;
-          if (daysUntilReminder <= 0) {
-            progress = 100;
-          } else {
-            const creationDay = dayjs(nextReminder.created_at);
-            const totalDays = reminderDay.diff(creationDay, 'day');
-            const daysElapsed = totalDays - daysUntilReminder;
-            progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
-          }
+          const progress = calculateProgress(nextReminder.reminder_date);
           setReminderProgress(progress);
         } else {
           setNextReminder(null);
@@ -93,24 +81,24 @@ function Dashboard() {
     fetchStats();
   }, []);
 
-  const calculateProgress = (reminderDate, createdDate) => {
+  const calculateProgress = (reminderDate) => {
     const today = dayjs();
     const reminderDay = dayjs(reminderDate);
     const daysUntilReminder = reminderDay.diff(today, 'day');
     
-    // If reminder is today or in the past, show 100%
+    // If reminder is today or in the past, show 100% (overdue/due today)
     if (daysUntilReminder <= 0) {
       return 100;
     }
     
-    // Calculate total days from creation to reminder
-    const creationDay = createdDate ? dayjs(createdDate) : today;
-    const totalDays = reminderDay.diff(creationDay, 'day');
-    const daysElapsed = totalDays - daysUntilReminder;
+    // Define a standard time window (e.g., 30 days)
+    // Progress increases as we get closer to the reminder date
+    const maxDays = 30;
+    const daysFromStart = Math.max(0, maxDays - daysUntilReminder);
     
-    // Progress = days elapsed / total days * 100
-    const progress = totalDays > 0 ? Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100)) : 0;
-    return progress;
+    // Progress = how far through the 30-day window we are
+    const progress = Math.min(100, (daysFromStart / maxDays) * 100);
+    return Math.round(progress);
   };
 
   const StatCard = ({ title, value, icon, color, subtitle }) => (
@@ -247,25 +235,30 @@ function Dashboard() {
                       <Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            Days Until Reminder
+                            Reminder Progress
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                            {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days
+                            {Math.max(0, dayjs(nextReminder.reminder_date).diff(dayjs(), 'day'))} days remaining
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
-                          value={calculateProgress(nextReminder.reminder_date, nextReminder.created_at)}
+                          value={reminderProgress}
                           sx={{
                             height: 8,
                             borderRadius: 4,
                             backgroundColor: '#e0e0e0',
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 4,
-                              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                              background: reminderProgress >= 80 
+                                ? `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.warning.main} 100%)`
+                                : `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                             },
                           }}
                         />
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                          {reminderProgress >= 80 ? '⚠️ Reminder approaching soon' : 'On track'}
+                        </Typography>
                       </Box>
 
                       <Typography variant="caption" color="text.secondary">

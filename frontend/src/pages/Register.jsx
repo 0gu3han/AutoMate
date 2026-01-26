@@ -98,7 +98,16 @@ const Register = () => {
             textAlign: 'center',
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            mb: 2,
+            backgroundColor: 'white',
+            borderRadius: 2,
+            p: 2,
+            width: 'fit-content',
+            margin: '0 auto 16px'
+          }}>
             <img 
               src={automateLogo} 
               alt="AutoMate Logo" 
@@ -134,6 +143,11 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   variant="outlined"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      color: '#000000',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -145,6 +159,11 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   variant="outlined"
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      color: '#000000',
+                    },
+                  }}
                 />
               </Grid>
             </Grid>
@@ -158,7 +177,12 @@ const Register = () => {
               margin="normal"
               required
               variant="outlined"
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                '& .MuiInputBase-input': {
+                  color: '#000000',
+                },
+              }}
             />
 
             <TextField
@@ -171,7 +195,12 @@ const Register = () => {
               margin="normal"
               required
               variant="outlined"
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                '& .MuiInputBase-input': {
+                  color: '#000000',
+                },
+              }}
             />
 
             <TextField
@@ -184,7 +213,12 @@ const Register = () => {
               margin="normal"
               required
               variant="outlined"
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                '& .MuiInputBase-input': {
+                  color: '#000000',
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -209,7 +243,12 @@ const Register = () => {
               margin="normal"
               required
               variant="outlined"
-              sx={{ mb: 3 }}
+              sx={{ 
+                mb: 3,
+                '& .MuiInputBase-input': {
+                  color: '#000000',
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
