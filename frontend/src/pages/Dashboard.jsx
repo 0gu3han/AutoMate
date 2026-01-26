@@ -6,7 +6,6 @@ import {
   Typography,
   Box,
   Chip,
-  LinearProgress,
   Stack,
   useTheme,
 } from '@mui/material';
@@ -318,11 +317,6 @@ function Dashboard() {
                     <Typography variant="caption" color="textSecondary">
                       {maintenance.date} - {maintenance.mileage} miles
                     </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={70}
-                      sx={{ mt: 1 }}
-                    />
                   </Box>
                 ))
               ) : (

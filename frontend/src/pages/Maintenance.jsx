@@ -22,6 +22,7 @@ import {
   Checkbox,
   Alert,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -51,6 +52,7 @@ function Maintenance() {
   const [reminderDate, setReminderDate] = useState(dayjs());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [maintenanceToDelete, setMaintenanceToDelete] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -81,6 +83,7 @@ function Maintenance() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const submitData = {
         ...formData,
@@ -123,6 +126,8 @@ function Maintenance() {
       fetchData();
     } catch (error) {
       console.error('Error saving maintenance event:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -422,9 +427,16 @@ function Maintenance() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              {editingEvent ? 'Update' : 'Add'}
+            <Button onClick={() => setOpenDialog(false)} disabled={submitting}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  {editingEvent ? 'Updating...' : 'Adding...'}
+                </>
+              ) : (
+                editingEvent ? 'Update' : 'Add'
+              )}
             </Button>
           </DialogActions>
         </form>

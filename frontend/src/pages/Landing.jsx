@@ -115,7 +115,7 @@ function Landing() {
                 textAlign: 'center',
               }}
             >
-              Never miss a service. Track your vehicles, manage maintenance, and get AI-powered diagnostics—all in one place.
+              Never miss a service. Track your vehicles, manage maintenance, and get AI-powered diagnostics-all in one place.
             </Typography>
 
             {/* CTA Buttons */}
