@@ -50,11 +50,19 @@ function Layout({ children }) {
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ 
-        p: 3, 
-        borderBottom: '1px solid #e2e8f0',
-        background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)'
-      }}>
+      <Box 
+        onClick={() => navigate('/login')}
+        sx={{ 
+          p: 3, 
+          borderBottom: '1px solid #e2e8f0',
+          background: 'linear-gradient(135deg, #0b2545 0%, #c0392b 100%)',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #193a63 0%, #8f241c 100%)',
+          }
+        }}
+      >
         <Typography variant="h5" sx={{ 
           color: 'white', 
           fontWeight: 700,

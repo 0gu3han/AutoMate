@@ -23,6 +23,7 @@ import {
   Alert,
   Stack,
   CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -53,6 +54,7 @@ function Maintenance() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [maintenanceToDelete, setMaintenanceToDelete] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -84,6 +86,11 @@ function Maintenance() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    
+    // Close dialog immediately for better UX
+    const isEditing = !!editingEvent;
+    setOpenDialog(false);
+    
     try {
       const submitData = {
         ...formData,
@@ -91,7 +98,7 @@ function Maintenance() {
       };
 
       let eventId;
-      if (editingEvent) {
+      if (isEditing) {
         await maintenanceAPI.update(editingEvent.id, submitData);
         eventId = editingEvent.id;
       } else {
@@ -112,7 +119,14 @@ function Maintenance() {
         }
       }
 
-      setOpenDialog(false);
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: isEditing ? 'Maintenance updated successfully' : 'Maintenance added successfully',
+        severity: 'success'
+      });
+      
+      // Reset form
       setEditingEvent(null);
       setShowReminder(false);
       setFormData({
@@ -123,9 +137,16 @@ function Maintenance() {
         notes: '',
       });
       setReminderDate(dayjs());
+      
+      // Refresh data in background
       fetchData();
     } catch (error) {
       console.error('Error saving maintenance event:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to save maintenance. Please try again.',
+        severity: 'error'
+      });
     } finally {
       setSubmitting(false);
     }
@@ -450,6 +471,22 @@ function Maintenance() {
         title="Delete Maintenance Record"
         message="Are you sure you want to delete this maintenance record? This action cannot be undone."
       />
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
