@@ -113,28 +113,6 @@ function Layout({ children }) {
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
           Version 1.0.0
         </Typography>
-        {user && (
-          <Button
-            fullWidth
-            variant="contained"
-            size="medium"
-            startIcon={<LogoutIcon />}
-            onClick={logout}
-            sx={{
-              mt: 1,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.3)',
-                borderColor: 'white',
-              },
-            }}
-          >
-            Logout
-          </Button>
-        )}
       </Box>
     </Box>
   );
